@@ -1,14 +1,39 @@
-
 package server;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class Server extends javax.swing.JFrame {
 
     int PUERTO;
-            
-    public Server() 
-    {
+
+    ServerSocket servidor = null;
+    Socket socket = null;
+    DataInputStream in;
+    DataOutputStream ou;
+    public class EscucharRed extends Thread {
+        @Override
+        public void run() {
+            try {
+                servidor = new ServerSocket(PUERTO);
+                socket = new Socket("127.0.0.1",PUERTO);
+                //jTextArea1.append("Servidor inicializado\n");
+                in = new DataInputStream(socket.getInputStream());
+                ou = new DataOutputStream(socket.getOutputStream());
+                
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public Server() {
         initComponents();
     }
 
@@ -105,9 +130,10 @@ public class Server extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-      PUERTO = Integer.parseInt(jTextField1.getText());
-      JOptionPane.showMessageDialog(null, "Servidor activado");
-      
+        PUERTO = Integer.parseInt(jTextField1.getText());
+        JOptionPane.showMessageDialog(null, "Servidor activado");
+        EscucharRed red =new EscucharRed();
+        red.start();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
