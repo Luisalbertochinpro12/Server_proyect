@@ -16,7 +16,7 @@ public class Server extends javax.swing.JFrame
     ServerSocket servidor = null;
     Socket socket = null;
     DataInputStream in;
-    DataOutputStream ou;
+    DataOutputStream out;
     
     public class EscucharRed extends Thread 
     {
@@ -26,10 +26,20 @@ public class Server extends javax.swing.JFrame
             try 
             {
                 servidor = new ServerSocket(PUERTO);
-                socket = new Socket("127.0.0.1",PUERTO);
-                //jTextArea1.append("Servidor inicializado\n");
+                //socket = new Socket("127.0.0.1",4000);
+                socket = servidor.accept();
+                System.out.println("ya acepte a un cliente");
+                //TextAreaRecibir.append("Servidor inicializado\n");
                 in = new DataInputStream(socket.getInputStream());
-                ou = new DataOutputStream(socket.getOutputStream());
+                out = new DataOutputStream(socket.getOutputStream());
+                
+                String mensaje = in.readUTF();
+                System.out.println(mensaje);
+                TextAreaRecibir.setText(mensaje);
+                
+                out.writeUTF("Mensaje recibido por el servidor");
+                
+                socket.close();
                 
             } catch (IOException ex) 
             {
