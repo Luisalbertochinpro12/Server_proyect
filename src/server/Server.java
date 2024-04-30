@@ -2,54 +2,66 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
-public class Server extends javax.swing.JFrame 
-{
+public class Server extends javax.swing.JFrame {
+
     int PUERTO;
 
     ServerSocket servidor = null;
     Socket socket = null;
     DataInputStream in;
     DataOutputStream out;
-    
-    public class EscucharRed extends Thread 
+
+    public class EscucharRed extends Thread
     {
         @Override
-        public void run() 
+        public void run()
         {
-            try 
+            try
             {
-                servidor = new ServerSocket(PUERTO);
-                //socket = new Socket("127.0.0.1",4000);
-                socket = servidor.accept();
-                System.out.println("ya acepte a un cliente");
-                //TextAreaRecibir.append("Servidor inicializado\n");
-                in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
+                while(true)
+                {
+                    socket = servidor.accept(); //Espera a que un cliente se conecte y almacena su socket
+                    in = new DataInputStream(socket.getInputStream());
+                    out = new DataOutputStream(socket.getOutputStream());
+                    
+                    while(true)
+                    {
+                        try
+                        {
+                            String mensaje = in.readUTF();
+                            TextAreaRecibir.append(mensaje + "\n");
+                        } 
+                        catch (EOFException ex) //El cliente se desconecto
+                        {
+                            JOptionPane.showMessageDialog(null, "El cliente se desconectó");
+                            break;
+                        }
+                        catch (SocketException ex)
+                        {
+                            
+                        }
+                    }
+                    
+                    socket.close(); 
+                }
                 
-                String mensaje = in.readUTF();
-                System.out.println(mensaje);
-                TextAreaRecibir.setText(mensaje);
                 
-                out.writeUTF("Mensaje recibido por el servidor");
-                
-                socket.close();
-                
-            } catch (IOException ex) 
+            } catch(IOException ex)
             {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
-    public Server() 
-    {
+    public Server() {
         initComponents();
     }
 
@@ -74,6 +86,8 @@ public class Server extends javax.swing.JFrame
 
         jLabel2.setText("Puerto de Red:");
 
+        TextFieldPuerto.setText("4000");
+
         ButtonActivar.setText("Activar Server");
         ButtonActivar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -93,6 +107,12 @@ public class Server extends javax.swing.JFrame
         TextAreaRecibir.setColumns(20);
         TextAreaRecibir.setRows(5);
         jScrollPane1.setViewportView(TextAreaRecibir);
+
+        TextFieldEnviar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TextFieldEnviarActionPerformed(evt);
+            }
+        });
 
         ButtonSalir.setText("Salir");
         ButtonSalir.addActionListener(new java.awt.event.ActionListener() {
@@ -159,19 +179,33 @@ public class Server extends javax.swing.JFrame
     }// </editor-fold>//GEN-END:initComponents
 
     private void ButtonEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonEnviarActionPerformed
-        // TODO add your handling code here:
+        String mensaje = TextFieldEnviar.getText();
+        try {
+            out.writeUTF(mensaje);
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_ButtonEnviarActionPerformed
 
     private void ButtonActivarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonActivarActionPerformed
         PUERTO = Integer.parseInt(TextFieldPuerto.getText());
+        try {
+            servidor = new ServerSocket(PUERTO);
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
         JOptionPane.showMessageDialog(null, "Servidor activado");
-        EscucharRed red =new EscucharRed();
+        EscucharRed red = new EscucharRed();
         red.start();
     }//GEN-LAST:event_ButtonActivarActionPerformed
 
     private void ButtonSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonSalirActionPerformed
         this.dispose();
     }//GEN-LAST:event_ButtonSalirActionPerformed
+
+    private void TextFieldEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TextFieldEnviarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TextFieldEnviarActionPerformed
 
     /**
      * @param args the command line arguments

@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +13,32 @@ public class Client extends javax.swing.JFrame {
     int PUERTO;
     DataInputStream in;
     DataOutputStream out;
+    EscucharServer red;
+    Socket socket;
+
+     public class EscucharServer extends Thread
+    {
+        @Override
+        public void run()
+        {
+            while(true)
+            {
+                try 
+                {
+                    String mensaje = in.readUTF();
+                    TextAreaRecibirEthernet.append(mensaje + "\n");
+                } catch (SocketException ex)
+                {
+                    break;
+                } catch (IOException ex) 
+                {
+                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                    break;
+                }
+            }
+            
+        }
+    }
 
     public Client() {
         initComponents();
@@ -34,6 +61,7 @@ public class Client extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         TextAreaRecibirEthernet = new javax.swing.JTextArea();
+        ButtonConectar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -59,12 +87,14 @@ public class Client extends javax.swing.JFrame {
             }
         });
 
+        TextFieldIP.setText("127.0.0.1");
         TextFieldIP.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TextFieldIPActionPerformed(evt);
             }
         });
 
+        TextFieldPuerto.setText("4000");
         TextFieldPuerto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TextFieldPuertoActionPerformed(evt);
@@ -82,6 +112,13 @@ public class Client extends javax.swing.JFrame {
         TextAreaRecibirEthernet.setColumns(20);
         TextAreaRecibirEthernet.setRows(5);
         jScrollPane1.setViewportView(TextAreaRecibirEthernet);
+
+        ButtonConectar.setText("Conectar");
+        ButtonConectar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonConectarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -105,18 +142,25 @@ public class Client extends javax.swing.JFrame {
                                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel3))
                                 .addGap(18, 18, 18)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(TextFieldPuerto)
-                                    .addComponent(TextFieldIP)
-                                    .addComponent(ButtonDesconectar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(TextFieldPuerto, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+                                        .addComponent(TextFieldIP))
+                                    .addComponent(ButtonConectar))))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(81, 81, 81))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(38, 38, 38))))))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel5)
+                                        .addGap(81, 81, 81))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(38, 38, 38))))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(13, 13, 13)
+                                .addComponent(ButtonDesconectar)
+                                .addGap(0, 0, Short.MAX_VALUE))))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,7 +189,8 @@ public class Client extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ButtonEnviar)
-                    .addComponent(ButtonDesconectar))
+                    .addComponent(ButtonDesconectar)
+                    .addComponent(ButtonConectar))
                 .addContainerGap(57, Short.MAX_VALUE))
         );
 
@@ -158,7 +203,7 @@ public class Client extends javax.swing.JFrame {
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addGap(0, 1, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,7 +219,12 @@ public class Client extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ButtonDesconectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonDesconectarActionPerformed
-        // TODO add your handling code here:
+        try {
+            red.interrupt();
+            socket.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_ButtonDesconectarActionPerformed
 
     private void TextFieldMensajeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TextFieldMensajeActionPerformed
@@ -187,23 +237,15 @@ public class Client extends javax.swing.JFrame {
 
     private void ButtonEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonEnviarActionPerformed
 
-        String IP = TextFieldIP.getText();
-        PUERTO = Integer.parseInt(TextFieldPuerto.getText());
-        System.out.println("vamos a crear el socket");
         try {
-            Socket socket = new Socket(IP, PUERTO);
-            System.out.println("creado");
-
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-
             String texto = TextFieldMensaje.getText();
             out.writeUTF(texto);
-            System.out.println("mensaje enviado");
+
+            /*System.out.println("mensaje enviado");
             String respuesta = in.readUTF();
             TextAreaRecibirEthernet.setText(respuesta);
-            System.out.println(respuesta);
-            socket.close();
+            System.out.println(respuesta);*/
+            //socket.close();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -214,6 +256,25 @@ public class Client extends javax.swing.JFrame {
     private void TextFieldPuertoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TextFieldPuertoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_TextFieldPuertoActionPerformed
+
+    private void ButtonConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonConectarActionPerformed
+
+        String IP = TextFieldIP.getText();
+        PUERTO = Integer.parseInt(TextFieldPuerto.getText());
+        //System.out.println("vamos a crear el socket");
+        try {
+            socket = new Socket(IP, PUERTO);
+            // System.out.println("creado");
+
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+
+            red = new EscucharServer();
+            red.start();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_ButtonConectarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -254,6 +315,7 @@ public class Client extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton ButtonConectar;
     private javax.swing.JButton ButtonDesconectar;
     private javax.swing.JButton ButtonEnviar;
     private javax.swing.JTextArea TextAreaRecibirEthernet;
